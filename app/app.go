@@ -16,6 +16,7 @@ type App struct {
 
 	ethClient *ethclient.Client
 	bscClient *ethclient.Client
+
 	swapStore SwapStore
 
 	isSync bool
@@ -27,7 +28,7 @@ func NewApp(logger *zap.Logger, cfg config.Config, swapStore SwapStore) (*App, e
 		return nil, err
 	}
 
-	bscClient, err := ethclient.Dial(cfg.Eth.RpcURL)
+	bscClient, err := ethclient.Dial(cfg.Bsc.RpcURL)
 	if err != nil {
 		return nil, err
 	}

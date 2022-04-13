@@ -3,13 +3,14 @@ package main
 import (
 	"os"
 	"os/signal"
-	"otc-backend/app"
-	"otc-backend/repository/postgres"
 	"syscall"
 
 	"go.uber.org/zap"
 
+	"otc-backend/app"
 	"otc-backend/config"
+	"otc-backend/repository/postgres"
+	"otc-backend/server"
 )
 
 func main() {
@@ -31,10 +32,14 @@ func main() {
 
 	swapRepo := postgres.NewSwapRepository(db)
 
-	_, err = app.NewApp(logger, cfg, swapRepo)
+	app, err := app.NewApp(logger, cfg, swapRepo)
 	if err != nil {
 		logger.Fatal("failed to create app", zap.Error(err))
 	}
+
+	logger.Info("server is starting...")
+	srv := server.NewServer(logger, cfg.Addr, app)
+	srv.Start()
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
