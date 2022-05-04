@@ -80,7 +80,7 @@ func (app *App) Start(ctx context.Context) {
 						continue
 					}
 					for transfers.Next() {
-						err := app.SyncLock(ctx, transfers.Event)
+						err := app.SyncLock(ctx, transfers.Event, types.Ethereum)
 						if err != nil {
 							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash",
 								transfers.Event.Poster.String()))
@@ -175,7 +175,7 @@ func (app *App) StartBSC(ctx context.Context) {
 						continue
 					}
 					for transfers.Next() {
-						err := app.SyncLock(ctx, transfers.Event)
+						err := app.SyncLock(ctx, transfers.Event, types.BSC)
 						if err != nil {
 							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash", common.BytesToHash(transfers.Event.TradeHash[:]).String()))
 							continue

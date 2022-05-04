@@ -18,12 +18,12 @@ func init() {
 	flag.StringVar(&cfg.Eth.RpcURL, "eth-rpc-url", "https://eth-rinkeby.alchemyapi.io/v2/JnkdVOGnQ-uvjAl2jto1-V1OL3Vquq-H", "")
 	flag.StringVar(&cfg.Eth.WsURL, "eth-ws-url", "wss://eth-rinkeby.alchemyapi.io/v2/JnkdVOGnQ-uvjAl2jto1-V1OL3Vquq-H", "")
 	flag.DurationVar(&cfg.Eth.ReconnectInterval, "eth-ws-reconnect-interval", 20, "minutes")
-	flag.StringVar(&cfg.Eth.SwapAddress, "eth-swap-addr", "0x1a2aa642C8cBA5BC7FCeD4f7e3c5a8a23EE2fB63", "")
+	flag.StringVar(&cfg.Eth.SwapAddress, "eth-swap-addr", "0xd5a742aE5e0e98095F53a5Cb935824868A67bbd8", "")
 
 	flag.StringVar(&cfg.Bsc.RpcURL, "bsc-rpc-url", "https://data-seed-prebsc-1-s1.binance.org:8545", "")
 	flag.StringVar(&cfg.Bsc.WsURL, "bsc-ws-url", "<wss-url>", "")
 	flag.DurationVar(&cfg.Bsc.ReconnectInterval, "ws-reconnect-interval", 20, "minutes")
-	flag.StringVar(&cfg.Bsc.SwapAddress, "bsc-swap-addr", "0xbd0622b99D764684F2ff97f5A9E8169F5E6E38C3", "")
+	flag.StringVar(&cfg.Bsc.SwapAddress, "bsc-swap-addr", "0x58e661a14C0201c7611481397970b06249bD5cdb", "")
 
 	flag.BoolVar(&cfg.IsNeedSync, "sync", true, "")
 

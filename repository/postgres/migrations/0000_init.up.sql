@@ -2,7 +2,7 @@ DO
 $$
     BEGIN
         IF NOT EXISTS(SELECT 1 FROM pg_type WHERE typname = 'network') THEN
-            CREATE TYPE network AS ENUM ('ethereum', 'bsc');
+            CREATE TYPE network AS ENUM ('ethereum', 'bsc', 'unknown');
         END IF;
     END
 $$;
@@ -18,7 +18,7 @@ create table trades
     address_1  varchar,
     network_1  network,
     address_2  varchar,
-    network_2  network,
+    network_2  network default 'unknown',
     created_at timestamp default now()
 );
 
@@ -28,9 +28,9 @@ create unique index trades_tradehash_uindex
 create table locks
 (
     id          serial,
-    tradehash   integer
+    tradehash   varchar
         constraint locks_trades_tradehash_fk
-            references trades
+            references trades(tradehash)
             on update cascade on delete cascade,
     address     varchar,
     network     network,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS blocks
 );
 
 INSERT INTO blocks (network, number, updated_at)
-VALUES ('ethereum', 10615848, now()),
-       ('bsc', 19005112, now());
+VALUES ('ethereum', 10617362, now()),
+       ('bsc', 19012549, now());
 
 

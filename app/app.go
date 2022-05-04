@@ -14,6 +14,10 @@ import (
 )
 
 type SwapStore interface {
+	GetTrade(ctx context.Context, tradehash string) (*postgres.Trade, error)
+	CreateTrade(ctx context.Context, trade *postgres.Trade) error
+	UpdateTrade(ctx context.Context, tradeID int, network postgres.Network) error
+	SaveLock(ctx context.Context, lock *postgres.Lock) error
 }
 
 type App struct {
@@ -58,9 +62,22 @@ type BlockStore interface {
 	Update(context.Context, postgres.Network, uint64) (uint64, error)
 }
 
-func (app *App) UpdateTrade(ctx context.Context, trade *types.Trade) error {
+func (app *App) GetTrade(ctx context.Context, tradehash string) (*types.Trade, error) {
+	trade, err := app.swapStore.GetTrade(ctx, tradehash)
+	if err != nil {
+		return nil, err
+	}
+	return types.TradeFromDB(trade), nil
+}
 
-	//TODO: implement me
+func (app *App) CreateTrade(ctx context.Context, trade *types.Trade) error {
+	return app.swapStore.CreateTrade(ctx, trade.ToDB())
+}
 
-	return nil
+func (app *App) UpdateTrade(ctx context.Context, tradeID int, network2 types.Network) error {
+	return app.swapStore.UpdateTrade(ctx, tradeID, network2)
+}
+
+func (app *App) SetLock(ctx context.Context, lock *types.Lock) error {
+	return app.swapStore.SaveLock(ctx, lock.ToDB())
 }
