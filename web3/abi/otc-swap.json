@@ -60,6 +60,12 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "tradeHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "poster",
         "type": "address"

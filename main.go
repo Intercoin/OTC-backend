@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,11 +32,18 @@ func main() {
 	}()
 
 	swapRepo := postgres.NewSwapRepository(db)
+	blockRepo := postgres.NewBlockRepository(db)
 
-	app, err := app.NewApp(logger, cfg, swapRepo)
+	app, err := app.NewApp(logger, cfg, swapRepo, blockRepo)
 	if err != nil {
 		logger.Fatal("failed to create app", zap.Error(err))
 	}
+
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
+
+	app.Start(ctx)
+	app.StartBSC(ctx)
 
 	logger.Info("server is starting...")
 	srv := server.NewServer(logger, cfg.Addr, app)

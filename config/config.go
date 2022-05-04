@@ -12,18 +12,18 @@ func init() {
 	flag.UintVar(&cfg.RetryAttempts, "retry-attempts", 10, "")
 	flag.DurationVar(&cfg.RetryDelay, "retry-delay", 200, "millisecond")
 
-	flag.StringVar(&cfg.DB.URI, "db-uri", "postgresql://postgres:123456@localhost:5432/otc?sslmode=disable", "")
+	flag.StringVar(&cfg.DB.URI, "db-uri", "postgresql://postgres:123456@localhost:5432/otc-crosschain?sslmode=disable", "")
 	flag.StringVar(&cfg.DB.MigrationTable, "migration-table", "schema_migrations", "")
 
-	flag.StringVar(&cfg.Eth.RpcURL, "rpc-url", "https://eth-rinkeby.alchemyapi.io/v2/JnkdVOGnQ-uvjAl2jto1-V1OL3Vquq-H", "")
-	flag.StringVar(&cfg.Eth.WsURL, "ws-url", "wss://eth-rinkeby.alchemyapi.io/v2/JnkdVOGnQ-uvjAl2jto1-V1OL3Vquq-H", "")
-	flag.DurationVar(&cfg.Eth.ReconnectInterval, "ws-reconnect-interval", 20, "minutes")
-	flag.StringVar(&cfg.Eth.SwapAddress, "swap-addr", "<swap-addr>", "")
+	flag.StringVar(&cfg.Eth.RpcURL, "eth-rpc-url", "https://eth-rinkeby.alchemyapi.io/v2/JnkdVOGnQ-uvjAl2jto1-V1OL3Vquq-H", "")
+	flag.StringVar(&cfg.Eth.WsURL, "eth-ws-url", "wss://eth-rinkeby.alchemyapi.io/v2/JnkdVOGnQ-uvjAl2jto1-V1OL3Vquq-H", "")
+	flag.DurationVar(&cfg.Eth.ReconnectInterval, "eth-ws-reconnect-interval", 20, "minutes")
+	flag.StringVar(&cfg.Eth.SwapAddress, "eth-swap-addr", "0x1a2aa642C8cBA5BC7FCeD4f7e3c5a8a23EE2fB63", "")
 
-	flag.StringVar(&cfg.Bsc.RpcURL, "rpc-url", "<rpc-url>", "")
-	flag.StringVar(&cfg.Bsc.WsURL, "ws-url", "<wss-url>", "")
+	flag.StringVar(&cfg.Bsc.RpcURL, "bsc-rpc-url", "https://data-seed-prebsc-1-s1.binance.org:8545", "")
+	flag.StringVar(&cfg.Bsc.WsURL, "bsc-ws-url", "<wss-url>", "")
 	flag.DurationVar(&cfg.Bsc.ReconnectInterval, "ws-reconnect-interval", 20, "minutes")
-	flag.StringVar(&cfg.Bsc.SwapAddress, "swap-addr", "<swap-addr>", "")
+	flag.StringVar(&cfg.Bsc.SwapAddress, "bsc-swap-addr", "0xbd0622b99D764684F2ff97f5A9E8169F5E6E38C3", "")
 
 	flag.BoolVar(&cfg.IsNeedSync, "sync", true, "")
 

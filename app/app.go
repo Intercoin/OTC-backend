@@ -6,6 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 
+	"otc-backend/repository/postgres"
+
 	"otc-backend/config"
 	"otc-backend/types"
 	"otc-backend/web3"
@@ -21,7 +23,8 @@ type App struct {
 	ethClient *ethclient.Client
 	bscClient *ethclient.Client
 
-	swap *web3.OTCSwap
+	swapEth *web3.OTCSwap
+	swapBSC *web3.OTCSwap
 
 	swapStore  SwapStore
 	blockStore BlockStore
@@ -29,7 +32,7 @@ type App struct {
 	isSync bool
 }
 
-func NewApp(logger *zap.Logger, cfg config.Config, swapStore SwapStore) (*App, error) {
+func NewApp(logger *zap.Logger, cfg config.Config, swapStore SwapStore, blockStore BlockStore) (*App, error) {
 	ethClient, err := ethclient.Dial(cfg.Eth.RpcURL)
 	if err != nil {
 		return nil, err
@@ -41,17 +44,18 @@ func NewApp(logger *zap.Logger, cfg config.Config, swapStore SwapStore) (*App, e
 	}
 
 	return &App{
-		logger:    logger,
-		cfg:       cfg,
-		swapStore: swapStore,
-		ethClient: ethClient,
-		bscClient: bscClient,
+		logger:     logger,
+		cfg:        cfg,
+		swapStore:  swapStore,
+		blockStore: blockStore,
+		ethClient:  ethClient,
+		bscClient:  bscClient,
 	}, nil
 }
 
 type BlockStore interface {
-	GetLastBlock(context.Context) (uint64, error)
-	Update(context.Context, uint64) (uint64, error)
+	GetLastBlock(context.Context, postgres.Network) (uint64, error)
+	Update(context.Context, postgres.Network, uint64) (uint64, error)
 }
 
 func (app *App) UpdateTrade(ctx context.Context, trade *types.Trade) error {
