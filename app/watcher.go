@@ -53,6 +53,7 @@ func (app *App) Start(ctx context.Context) {
 					app.logger.Error("failed to get block number", zap.Error(err))
 					continue
 				}
+				blockNumber++
 				if blockNumber <= lastBlockNumber {
 					continue
 				}
@@ -86,7 +87,7 @@ func (app *App) Start(ctx context.Context) {
 								transfers.Event.Poster.String()))
 							continue
 						}
-						app.logger.Info("event catched", zap.String("Network", fmt.Sprint(types.Ethereum)),
+						app.logger.Info("event catched", zap.String("Type", "lock"), zap.String("Network", fmt.Sprint(types.Ethereum)),
 							zap.String("Tradehash", common.BytesToHash(transfers.Event.TradeHash[:]).String()))
 					}
 					_ = transfers.Close()
@@ -177,8 +178,8 @@ func (app *App) StartBSC(ctx context.Context) {
 					app.logger.Error("failed to get block number", zap.Error(err))
 					continue
 				}
+				blockNumber++
 				if blockNumber <= lastBlockNumber {
-
 					continue
 				}
 
