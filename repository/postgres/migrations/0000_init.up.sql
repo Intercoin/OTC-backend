@@ -13,7 +13,6 @@ create table trades
     id         serial
         constraint trades_pk
             primary key,
-    tx         varchar not null,
     tradehash  varchar not null,
     address_1  varchar,
     network_1  network,
@@ -28,6 +27,7 @@ create unique index trades_tradehash_uindex
 create table locks
 (
     id          serial,
+    tx         varchar not null,
     tradehash   varchar
         constraint locks_trades_tradehash_fk
             references trades(tradehash)
@@ -44,9 +44,10 @@ create table locks
 create table engages
 (
     id        serial,
-    tradehash integer
+    tx         varchar not null,
+    tradehash varchar
         constraint locks_trades_tradehash_fk
-            references trades
+            references trades(tradehash)
             on update cascade on delete cascade,
     address   varchar,
     network   network,
@@ -56,14 +57,15 @@ create table engages
 create table claims
 (
     id         serial,
-    tradehash  integer
+    tx         varchar not null,
+    tradehash  varchar
         constraint locks_trades_tradehash_fk
-            references trades
+            references trades(tradehash)
             on update cascade on delete cascade,
     address    varchar,
     network    network,
     penalty    numeric,
-    signatures varchar
+    signatures varchar[]
 );
 
 CREATE TABLE IF NOT EXISTS blocks

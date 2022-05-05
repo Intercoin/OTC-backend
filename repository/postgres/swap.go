@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -17,7 +18,6 @@ func NewSwapRepository(db *sqlx.DB) *SwapRepository {
 
 type Trade struct {
 	ID        int    `db:"id"`
-	Tx        string `db:"tx"`
 	TradeHash string `db:"tradehash"`
 
 	//-----------Paticipant #1-----------------
@@ -33,20 +33,22 @@ type Trade struct {
 
 type Lock struct {
 	ID        int    `db:"id"`
+	Tx        string `db:"tx"`
 	TradeHash string `db:"tradehash"`
 
-	Address    string  `db:"address"`
-	Network    Network `db:"network"`
-	Asset      string  `db:"asset"`
-	Amount     string  `db:"amount"`
-	MaxPenalty string  `db:"max_penalty"`
-	Deadline   string  `db:"deadline"`
+	Address    string         `db:"address"`
+	Network    Network        `db:"network"`
+	Asset      string         `db:"asset"`
+	Amount     string         `db:"amount"`
+	MaxPenalty sql.NullString `db:"max_penalty"`
+	Deadline   string         `db:"deadline"`
 
 	CreatedAt time.Time `db:"created_at"`
 }
 
 type Engage struct {
 	ID        int    `db:"id"`
+	Tx        string `db:"tx"`
 	TradeHash string `db:"tradehash"`
 
 	Address   string  `db:"address"`
@@ -56,19 +58,19 @@ type Engage struct {
 
 type Claim struct {
 	ID        int    `db:"id"`
+	Tx        string `db:"tx"`
 	TradeHash string `db:"tradehash"`
 
-	Address    string  `db:"address"`
-	Network    Network `db:"network"`
-	Signatures string  `db:"signatures"`
-	Penalty    string  `db:"penalty"`
+	Address    string         `db:"address"`
+	Network    Network        `db:"network"`
+	Signatures []string       `db:"signatures"`
+	Penalty    sql.NullString `db:"penalty"`
 }
 
 func (repo *SwapRepository) GetTrade(ctx context.Context, tradehash string) (*Trade, error) {
 	dto := &Trade{TradeHash: tradehash}
 	query, args, err := repo.db.BindNamed(`
 SELECT id,
-       tx,
        address_1,
        network_1,
        address_2,
@@ -87,9 +89,8 @@ WHERE tradehash = :tradehash;`, dto)
 
 func (repo *SwapRepository) CreateTrade(ctx context.Context, trade *Trade) error {
 	query, args, err := repo.db.BindNamed(`
-INSERT INTO trades (tx, tradehash, address_1, network_1, address_2) 
-VALUES (:tx, 
-		:tradehash, 
+INSERT INTO trades (tradehash, address_1, network_1, address_2) 
+VALUES (:tradehash, 
 		:address_1, 
         :network_1,
         :address_2)
@@ -115,8 +116,9 @@ WHERE id = :id;`, dto)
 
 func (repo *SwapRepository) SaveLock(ctx context.Context, lock *Lock) error {
 	query, args, err := repo.db.BindNamed(`
-INSERT INTO locks (tradehash, address, network, asset, amount, max_penalty, deadline) 
-VALUES (:tradehash, 
+INSERT INTO locks (tx, tradehash, address, network, asset, amount, max_penalty, deadline) 
+VALUES (:tx,
+        :tradehash, 
 		:address, 
         :network, 
         :asset, 
@@ -128,4 +130,35 @@ RETURNING id, created_at;`, lock)
 		return err
 	}
 	return repo.db.GetContext(ctx, lock, query, args...)
+}
+
+func (repo *SwapRepository) SaveEngage(ctx context.Context, engage *Engage) error {
+	query, args, err := repo.db.BindNamed(`
+INSERT INTO engages (tx, tradehash, address, network, signature) 
+VALUES (:tx, 
+        :tradehash, 
+		:address, 
+        :network, 
+        :signature)
+RETURNING id;`, engage)
+	if err != nil {
+		return err
+	}
+	return repo.db.GetContext(ctx, engage, query, args...)
+}
+
+func (repo *SwapRepository) SaveClaim(ctx context.Context, claim *Claim) error {
+	query, args, err := repo.db.BindNamed(`
+INSERT INTO claims (tx, tradehash, address, network, penalty, signatures) 
+VALUES (:tx, 
+        :tradehash, 
+		:address, 
+        :network, 
+        :penalty, 
+        :signatures)
+RETURNING id;`, claim)
+	if err != nil {
+		return err
+	}
+	return repo.db.GetContext(ctx, claim, query, args...)
 }

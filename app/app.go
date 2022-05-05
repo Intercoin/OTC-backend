@@ -18,6 +18,8 @@ type SwapStore interface {
 	CreateTrade(ctx context.Context, trade *postgres.Trade) error
 	UpdateTrade(ctx context.Context, tradeID int, network postgres.Network) error
 	SaveLock(ctx context.Context, lock *postgres.Lock) error
+	SaveEngage(ctx context.Context, lock *postgres.Engage) error
+	SaveClaim(ctx context.Context, lock *postgres.Claim) error
 }
 
 type App struct {
@@ -80,4 +82,10 @@ func (app *App) UpdateTrade(ctx context.Context, tradeID int, network2 types.Net
 
 func (app *App) SetLock(ctx context.Context, lock *types.Lock) error {
 	return app.swapStore.SaveLock(ctx, lock.ToDB())
+}
+func (app *App) SetEngage(ctx context.Context, engage *types.Engage) error {
+	return app.swapStore.SaveEngage(ctx, engage.ToDB())
+}
+func (app *App) SetClaim(ctx context.Context, claim *types.Claim) error {
+	return app.swapStore.SaveClaim(ctx, claim.ToDB())
 }

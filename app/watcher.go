@@ -91,6 +91,38 @@ func (app *App) Start(ctx context.Context) {
 					}
 					_ = transfers.Close()
 
+					engages, err := app.swapEth.FilterEngaged(opts)
+					if err != nil {
+						app.logger.Error("failed to filter swaps engages", zap.Error(err))
+						continue
+					}
+					for engages.Next() {
+						err := app.SyncEngage(ctx, engages.Event, types.Ethereum)
+						if err != nil {
+							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash", common.BytesToHash(engages.Event.TradeHash[:]).String()))
+							continue
+						}
+						app.logger.Info("event catched", zap.String("Type", "engage"), zap.String("Network", fmt.Sprint(types.Ethereum)),
+							zap.String("Tradehash", common.BytesToHash(engages.Event.TradeHash[:]).String()))
+					}
+					_ = engages.Close()
+
+					claims, err := app.swapEth.FilterClaimed(opts)
+					if err != nil {
+						app.logger.Error("failed to filter swaps claims", zap.Error(err))
+						continue
+					}
+					for claims.Next() {
+						err := app.SyncClaim(ctx, claims.Event, types.Ethereum)
+						if err != nil {
+							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash", common.BytesToHash(claims.Event.TradeHash[:]).String()))
+							continue
+						}
+						app.logger.Info("event catched", zap.String("Type", "claim"), zap.String("Network", fmt.Sprint(types.Ethereum)),
+							zap.String("Tradehash", common.BytesToHash(claims.Event.TradeHash[:]).String()))
+					}
+					_ = claims.Close()
+
 					if end >= blockNumber {
 						break
 					}
@@ -180,10 +212,42 @@ func (app *App) StartBSC(ctx context.Context) {
 							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash", common.BytesToHash(transfers.Event.TradeHash[:]).String()))
 							continue
 						}
-						app.logger.Info("event catched", zap.String("Network", fmt.Sprint(types.BSC)),
+						app.logger.Info("event catched", zap.String("Type", "lock"), zap.String("Network", fmt.Sprint(types.BSC)),
 							zap.String("Tradehash", common.BytesToHash(transfers.Event.TradeHash[:]).String()))
 					}
 					_ = transfers.Close()
+
+					engages, err := app.swapBSC.FilterEngaged(opts)
+					if err != nil {
+						app.logger.Error("failed to filter swaps engages", zap.Error(err))
+						continue
+					}
+					for engages.Next() {
+						err := app.SyncEngage(ctx, engages.Event, types.BSC)
+						if err != nil {
+							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash", common.BytesToHash(engages.Event.TradeHash[:]).String()))
+							continue
+						}
+						app.logger.Info("event catched", zap.String("Type", "engage"), zap.String("Network", fmt.Sprint(types.BSC)),
+							zap.String("Tradehash", common.BytesToHash(engages.Event.TradeHash[:]).String()))
+					}
+					_ = engages.Close()
+
+					claims, err := app.swapBSC.FilterClaimed(opts)
+					if err != nil {
+						app.logger.Error("failed to filter swaps claims", zap.Error(err))
+						continue
+					}
+					for claims.Next() {
+						err := app.SyncClaim(ctx, claims.Event, types.BSC)
+						if err != nil {
+							app.logger.Error("failed to sync trade", zap.Error(err), zap.String("tradehash", common.BytesToHash(claims.Event.TradeHash[:]).String()))
+							continue
+						}
+						app.logger.Info("event catched", zap.String("Type", "claim"), zap.String("Network", fmt.Sprint(types.BSC)),
+							zap.String("Tradehash", common.BytesToHash(claims.Event.TradeHash[:]).String()))
+					}
+					_ = claims.Close()
 
 					if end >= blockNumber {
 						break

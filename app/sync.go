@@ -17,7 +17,7 @@ func (app *App) SyncLock(ctx context.Context, event *web3.OTCSwapNewTransfer, ne
 	trade, err := app.GetTrade(ctx, lock.TradeHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			trade = event.ToTradeModel(event.Raw.TxHash.String(), network)
+			trade = event.ToTradeModel(network)
 			err = app.CreateTrade(ctx, trade)
 			if err != nil {
 				app.logger.Warn("failed to create new trade", zap.Error(err), zap.Reflect("trade", trade))
@@ -40,6 +40,32 @@ func (app *App) SyncLock(ctx context.Context, event *web3.OTCSwapNewTransfer, ne
 	err = app.SetLock(ctx, lock)
 	if err != nil {
 		app.logger.Warn("failed to write new lock", zap.Error(err), zap.Reflect("lock", lock))
+		return err
+	}
+	return nil
+}
+
+func (app *App) SyncEngage(ctx context.Context, event *web3.OTCSwapEngaged, network types.Network) error {
+
+	engage := event.ToModel()
+	engage.Network = network
+
+	err := app.SetEngage(ctx, engage)
+	if err != nil {
+		app.logger.Warn("failed to write new engage", zap.Error(err), zap.Reflect("engage", engage))
+		return err
+	}
+	return nil
+}
+
+func (app *App) SyncClaim(ctx context.Context, event *web3.OTCSwapClaimed, network types.Network) error {
+
+	claim := event.ToModel()
+	claim.Network = network
+
+	err := app.SetClaim(ctx, claim)
+	if err != nil {
+		app.logger.Warn("failed to write new claim", zap.Error(err), zap.Reflect("claim", claim))
 		return err
 	}
 	return nil

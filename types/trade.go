@@ -27,7 +27,6 @@ func NetworkToDB(network Network) postgres.Network {
 
 type Trade struct {
 	ID        int       `json:"id"`
-	Tx        string    `json:"tx"`
 	TradeHash string    `json:"tradehash"`
 	Address1  string    `json:"address_1"`
 	Network1  Network   `json:"network_1"`
@@ -39,7 +38,6 @@ type Trade struct {
 func (t *Trade) ToDB() *postgres.Trade {
 	return &postgres.Trade{
 		ID:        t.ID,
-		Tx:        t.Tx,
 		TradeHash: t.TradeHash,
 		Address1:  t.Address1,
 		Network1:  t.Network1,
@@ -52,7 +50,6 @@ func (t *Trade) ToDB() *postgres.Trade {
 func TradeFromDB(t *postgres.Trade) *Trade {
 	return &Trade{
 		ID:        t.ID,
-		Tx:        t.Tx,
 		TradeHash: t.TradeHash,
 		Address1:  t.Address1,
 		Network1:  t.Network1,
@@ -63,6 +60,7 @@ func TradeFromDB(t *postgres.Trade) *Trade {
 }
 
 type Lock struct {
+	Tx         string    `json:"tx"`
 	TradeHash  string    `json:"tradehash"`
 	Address    string    `json:"address"`
 	Network    Network   `json:"network"`
@@ -73,20 +71,41 @@ type Lock struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
-func (t *Lock) ToDB() *postgres.Lock {
+func (l *Lock) ToDB() *postgres.Lock {
 	return &postgres.Lock{
-		TradeHash:  t.TradeHash,
-		Address:    t.Address,
-		Network:    t.Network,
-		Asset:      t.Asset,
-		Amount:     t.Amount,
-		MaxPenalty: t.MaxPenalty,
-		Deadline:   t.Deadline,
-		CreatedAt:  t.CreatedAt,
+		Tx:         l.Tx,
+		TradeHash:  l.TradeHash,
+		Address:    l.Address,
+		Network:    l.Network,
+		Asset:      l.Asset,
+		Amount:     l.Amount,
+		MaxPenalty: postgres.NullStringFromString(l.MaxPenalty),
+		Deadline:   l.Deadline,
+		CreatedAt:  l.CreatedAt,
 	}
 }
 
+func LockFromDB(l *postgres.Lock) *Lock {
+	lock := &Lock{
+		Tx:        l.Tx,
+		TradeHash: l.TradeHash,
+		Address:   l.Address,
+		Network:   l.Network,
+		Asset:     l.Asset,
+		Amount:    l.Amount,
+		Deadline:  l.Deadline,
+		CreatedAt: l.CreatedAt,
+	}
+
+	if l.MaxPenalty.Valid {
+		lock.MaxPenalty = l.MaxPenalty.String
+	}
+
+	return lock
+}
+
 type Engage struct {
+	Tx        string  `json:"tx"`
 	TradeHash string  `json:"tradehash"`
 	Address   string  `json:"address"`
 	Network   Network `json:"network"`
@@ -95,6 +114,7 @@ type Engage struct {
 
 func (t *Engage) ToDB() *postgres.Engage {
 	return &postgres.Engage{
+		Tx:        t.Tx,
 		TradeHash: t.TradeHash,
 		Address:   t.Address,
 		Network:   t.Network,
@@ -103,18 +123,21 @@ func (t *Engage) ToDB() *postgres.Engage {
 }
 
 type Claim struct {
-	TradeHash  string  `json:"tradehash"`
-	Address    string  `json:"address"`
-	Network    Network `json:"network"`
-	Signatures string  `json:"signature"`
-	Penalty    string  `json:"penalty"`
+	Tx         string   `json:"tx"`
+	TradeHash  string   `json:"tradehash"`
+	Address    string   `json:"address"`
+	Network    Network  `json:"network"`
+	Signatures []string `json:"signature"`
+	Penalty    string   `json:"penalty"`
 }
 
 func (t *Claim) ToDB() *postgres.Claim {
 	return &postgres.Claim{
+		Tx:         t.Tx,
 		TradeHash:  t.TradeHash,
 		Address:    t.Address,
 		Network:    t.Network,
+		Penalty:    postgres.NullStringFromString(t.Penalty),
 		Signatures: t.Signatures,
 	}
 }
