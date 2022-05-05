@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"github.com/lib/pq"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -63,7 +64,7 @@ type Claim struct {
 
 	Address    string         `db:"address"`
 	Network    Network        `db:"network"`
-	Signatures []string       `db:"signatures"`
+	Signatures pq.StringArray `db:"signatures"`
 	Penalty    sql.NullString `db:"penalty"`
 }
 
@@ -132,6 +133,22 @@ RETURNING id, created_at;`, lock)
 	return repo.db.GetContext(ctx, lock, query, args...)
 }
 
+func (repo *SwapRepository) GetLocks(ctx context.Context, tradehash string) ([]*Lock, error) {
+	lock := &Lock{TradeHash: tradehash}
+	query, args, err := repo.db.BindNamed(`
+SELECT tx, tradehash, address, network, asset, amount, max_penalty, deadline, created_at FROM locks 
+WHERE tradehash = :tradehash;`, lock)
+	if err != nil {
+		return nil, err
+	}
+	var locks []*Lock
+	err = repo.db.SelectContext(ctx, &locks, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return locks, nil
+}
+
 func (repo *SwapRepository) SaveEngage(ctx context.Context, engage *Engage) error {
 	query, args, err := repo.db.BindNamed(`
 INSERT INTO engages (tx, tradehash, address, network, signature) 
@@ -145,6 +162,22 @@ RETURNING id;`, engage)
 		return err
 	}
 	return repo.db.GetContext(ctx, engage, query, args...)
+}
+
+func (repo *SwapRepository) GetEngages(ctx context.Context, tradehash string) ([]*Engage, error) {
+	engage := &Engage{TradeHash: tradehash}
+	query, args, err := repo.db.BindNamed(`
+SELECT tx, tradehash, address, network, signature FROM engages 
+WHERE tradehash = :tradehash;`, engage)
+	if err != nil {
+		return nil, err
+	}
+	var engages []*Engage
+	err = repo.db.SelectContext(ctx, &engages, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return engages, nil
 }
 
 func (repo *SwapRepository) SaveClaim(ctx context.Context, claim *Claim) error {
@@ -161,4 +194,20 @@ RETURNING id;`, claim)
 		return err
 	}
 	return repo.db.GetContext(ctx, claim, query, args...)
+}
+
+func (repo *SwapRepository) GetClaims(ctx context.Context, tradehash string) ([]*Claim, error) {
+	claim := &Claim{TradeHash: tradehash}
+	query, args, err := repo.db.BindNamed(`
+SELECT tx, tradehash, address, network, penalty, signatures FROM claims 
+WHERE tradehash = :tradehash;`, claim)
+	if err != nil {
+		return nil, err
+	}
+	var claims []*Claim
+	err = repo.db.SelectContext(ctx, &claims, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return claims, nil
 }

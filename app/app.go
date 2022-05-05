@@ -18,8 +18,11 @@ type SwapStore interface {
 	CreateTrade(ctx context.Context, trade *postgres.Trade) error
 	UpdateTrade(ctx context.Context, tradeID int, network postgres.Network) error
 	SaveLock(ctx context.Context, lock *postgres.Lock) error
+	GetLocks(ctx context.Context, tradehash string) ([]*postgres.Lock, error)
 	SaveEngage(ctx context.Context, lock *postgres.Engage) error
+	GetEngages(ctx context.Context, tradehash string) ([]*postgres.Engage, error)
 	SaveClaim(ctx context.Context, lock *postgres.Claim) error
+	GetClaims(ctx context.Context, tradehash string) ([]*postgres.Claim, error)
 }
 
 type App struct {
@@ -83,9 +86,59 @@ func (app *App) UpdateTrade(ctx context.Context, tradeID int, network2 types.Net
 func (app *App) SetLock(ctx context.Context, lock *types.Lock) error {
 	return app.swapStore.SaveLock(ctx, lock.ToDB())
 }
+
+func (app *App) GetLocks(ctx context.Context, tradehash string) ([]*types.Lock, error) {
+	locks, err := app.swapStore.GetLocks(ctx, tradehash)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*types.Lock, 0, len(locks))
+	for _, lock := range locks {
+		p := types.LockFromDB(lock)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, nil
+}
+
 func (app *App) SetEngage(ctx context.Context, engage *types.Engage) error {
 	return app.swapStore.SaveEngage(ctx, engage.ToDB())
 }
+
+func (app *App) GetEngages(ctx context.Context, tradehash string) ([]*types.Engage, error) {
+	engages, err := app.swapStore.GetEngages(ctx, tradehash)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*types.Engage, 0, len(engages))
+	for _, engage := range engages {
+		p := types.EngageFromDB(engage)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, nil
+}
+
 func (app *App) SetClaim(ctx context.Context, claim *types.Claim) error {
 	return app.swapStore.SaveClaim(ctx, claim.ToDB())
+}
+
+func (app *App) GetClaims(ctx context.Context, tradehash string) ([]*types.Claim, error) {
+	claims, err := app.swapStore.GetClaims(ctx, tradehash)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*types.Claim, 0, len(claims))
+	for _, claim := range claims {
+		p := types.ClaimFromDB(claim)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, nil
 }

@@ -51,6 +51,7 @@ type Network struct {
 	WsURL             string
 	ReconnectInterval time.Duration
 	SwapAddress       string
+	ExplorerPrefix    string
 }
 
 func Get() Config {

@@ -10,6 +10,8 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/jmoiron/sqlx v1.3.4
+	github.com/lib/pq v1.10.2
+	github.com/pkg/errors v0.9.1
 	go.uber.org/zap v1.21.0
 )
 

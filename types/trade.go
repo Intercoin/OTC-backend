@@ -112,13 +112,23 @@ type Engage struct {
 	Signature string  `json:"signature"`
 }
 
-func (t *Engage) ToDB() *postgres.Engage {
+func (e *Engage) ToDB() *postgres.Engage {
 	return &postgres.Engage{
-		Tx:        t.Tx,
-		TradeHash: t.TradeHash,
-		Address:   t.Address,
-		Network:   t.Network,
-		Signature: t.Signature,
+		Tx:        e.Tx,
+		TradeHash: e.TradeHash,
+		Address:   e.Address,
+		Network:   e.Network,
+		Signature: e.Signature,
+	}
+}
+
+func EngageFromDB(e *postgres.Engage) *Engage {
+	return &Engage{
+		Tx:        e.Tx,
+		TradeHash: e.TradeHash,
+		Address:   e.Address,
+		Network:   e.Network,
+		Signature: e.Signature,
 	}
 }
 
@@ -140,4 +150,20 @@ func (t *Claim) ToDB() *postgres.Claim {
 		Penalty:    postgres.NullStringFromString(t.Penalty),
 		Signatures: t.Signatures,
 	}
+}
+
+func ClaimFromDB(c *postgres.Claim) *Claim {
+	claim := &Claim{
+		Tx:         c.Tx,
+		TradeHash:  c.TradeHash,
+		Address:    c.Address,
+		Network:    c.Network,
+		Signatures: c.Signatures,
+	}
+
+	if c.Penalty.Valid {
+		claim.Penalty = c.Penalty.String
+	}
+
+	return claim
 }
